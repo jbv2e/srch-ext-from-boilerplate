@@ -3,7 +3,8 @@
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
-      "@src/*": ["src/*"]
+      "@src/*": ["src/*"],
+      "@/components/*": ["../../packages/ui/components/*"]
     },
     "types": ["chrome", "node"]
   },

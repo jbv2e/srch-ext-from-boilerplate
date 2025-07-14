@@ -1,0 +1,113 @@
+import React, { useEffect } from 'react'
+import { AlertDialogDemo } from './AlertDialogDemo'
+
+type props = {
+  children: React.ReactNode
+  isOpen: boolean
+  onClose: () => void
+}
+
+export const SlidePanel = ({ isOpen, onClose, children }: props) => {
+  const [isDarkMode, setIsDarkMode] = React.useState(localStorage.getItem('theme') === 'dark')
+  const [isAlertOpen, setIsAlertOpen] = React.useState(false)
+
+  const alertConfirm = () => {
+    setIsAlertOpen(false)
+  }
+
+  useEffect(() => {
+    // console.log(document.documentElement.classList)
+    console.log(localStorage.getItem('theme'))
+    if (isDarkMode) {
+      document.documentElement.classList.add('dark')
+      localStorage.setItem('theme', 'dark')
+    } else {
+      document.documentElement.classList.remove('dark')
+      localStorage.setItem('theme', 'light')
+    }
+  }, [isDarkMode])
+
+  // if (localStorage.getItem('theme') === 'dark') {
+  //   document.documentElement.classList.add('dark');
+  // }
+
+  if (!isOpen) {
+    return null
+  }
+
+  return (
+    <>
+      <div id="slide-panel" className="fixed inset-0 z-[9998] flex items-center justify-center">
+        {/* 배경 오버레이 */}
+        <div
+          id="overlay"
+          className="absolute inset-0 bg-black opacity-50"
+          role="button"
+          tabIndex={0}
+          onClick={onClose}
+          onKeyDown={e => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              onClose()
+            }
+          }}></div>
+
+        {/* className={`p-1rem right-0 transition duration-500 ease-in-out w-screen inset-y-0 bg-white flex-1 flex-col h-dvh border-l-1 border-athens-gray max-w-15rem xl:w-15rem under-mobile:w-[70vw] ${ */}
+
+        {/* 슬라이딩 패널 */}
+        <div
+          className={`fixed top-0 right-0 h-full w-full bg-white dark:bg-white shadow-xl transition-transform transform  duration-700 ease-in-out ${
+            isOpen ? 'translate-x-0' : 'translate-x-full'
+          } p-6 flex flex-col`}
+          style={{ zIndex: 10000 }} // Ensure panel is above overlay
+        >
+          {children}
+
+           {/* 헤더 */}
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-2xl font-semibold dark:text-gray-800">조회 - 2</h2>
+            <button onClick={onClose} className="text-3xl text-gray-500 hover:text-gray-700">
+              &times;
+            </button>
+          </div>
+
+          {/* 콘텐츠 영역 */}
+          <div className="flex-grow overflow-y-auto text-gray-700">
+            <p className="mb-4">여기에 확장 프로그램 콘텐츠를 표시합니다. 웹페이지와 CSS가 충돌하지 않습니다.</p>
+
+            {/* 샘플 카드 */}
+            <div className="p-4 mb-4 bg-gray-100 rounded-lg shadow">
+              <h3 className="mb-2 text-lg font-semibold text-gray-800">샘플 카드</h3>
+              <p>Tailwind CSS로 스타일링된 컴포넌트입니다.</p>
+            </div>
+
+            {/* 버튼 그룹 */}
+            <div className="flex space-x-2">
+              <button
+                className="px-4 py-2 font-semibold text-white bg-blue-500 rounded hover:bg-blue-600"
+                onClick={() => setIsAlertOpen(true)}>
+                버튼 1
+              </button>
+              <button className="px-4 py-2 font-semibold text-white bg-green-500 rounded hover:bg-green-600">
+                버튼 2
+              </button>
+              <button
+                onClick={() => setIsDarkMode(!isDarkMode)}
+                className="p-2 bg-gray-300 dark:bg-gray-700 dark:text-white">
+                {isDarkMode ? '🌙 다크 모드' : '☀️ 라이트 모드'}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+      {isAlertOpen && (
+        <AlertDialogDemo
+          open={isAlertOpen}
+          title="Are you sure?"
+          description="This action cannot be undone."
+          onConfirm={alertConfirm}
+          onOpenChange={setIsAlertOpen}
+        />
+      )}
+    </>
+  )
+}

@@ -1,17 +1,18 @@
-import { createRoot } from 'react-dom/client';
-import App from '@src/App';
+import { createRoot } from 'react-dom/client'
+import App from '@src/App'
+import { PortalContainerContext } from '@extension/ui'
 // @ts-expect-error Because file doesn't exist before build
-import tailwindcssOutput from '../dist/tailwind-output.css?inline';
+import tailwindcssOutput from '../dist/tailwind-output.css?inline'
 
-const root = document.createElement('div');
-root.id = 'chrome-extension-boilerplate-react-vite-content-view-root';
+const root = document.createElement('div')
+root.id = 'chrome-extension-boilerplate-react-vite-content-view-root'
 
-document.body.append(root);
+document.body.append(root)
 
-const rootIntoShadow = document.createElement('div');
-rootIntoShadow.id = 'shadow-root';
+const rootIntoShadow = document.createElement('div')
+rootIntoShadow.id = 'shadow-root'
 
-const shadowRoot = root.attachShadow({ mode: 'open' });
+const shadowRoot = root.attachShadow({ mode: 'open' })
 
 if (navigator.userAgent.includes('Firefox')) {
   /**
@@ -20,15 +21,19 @@ if (navigator.userAgent.includes('Firefox')) {
    *
    * Injecting styles into the document, this may cause style conflicts with the host page
    */
-  const styleElement = document.createElement('style');
-  styleElement.innerHTML = tailwindcssOutput;
-  shadowRoot.appendChild(styleElement);
+  const styleElement = document.createElement('style')
+  styleElement.innerHTML = tailwindcssOutput
+  shadowRoot.appendChild(styleElement)
 } else {
   /** Inject styles into shadow dom */
-  const globalStyleSheet = new CSSStyleSheet();
-  globalStyleSheet.replaceSync(tailwindcssOutput);
-  shadowRoot.adoptedStyleSheets = [globalStyleSheet];
+  const globalStyleSheet = new CSSStyleSheet()
+  globalStyleSheet.replaceSync(tailwindcssOutput)
+  shadowRoot.adoptedStyleSheets = [globalStyleSheet]
 }
 
-shadowRoot.appendChild(rootIntoShadow);
-createRoot(rootIntoShadow).render(<App />);
+shadowRoot.appendChild(rootIntoShadow)
+createRoot(rootIntoShadow).render(
+  <PortalContainerContext.Provider value={rootIntoShadow}>
+    <App />
+  </PortalContainerContext.Provider>,
+)
