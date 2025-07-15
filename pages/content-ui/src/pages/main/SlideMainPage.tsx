@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import type React from 'react'
-import { SlidePanel } from '@extension/ui'
+import { SlidePanel, CustomAlertDialog } from '@extension/ui'
 
 type Props = {
   children?: React.ReactNode
@@ -8,29 +8,49 @@ type Props = {
   onClose: () => void
 }
 
+type CustomAlertDialogProps = {
+  onOpenChange?: (open: boolean) => void
+  title: string
+  description: string
+  buttons: ButtonProps[]
+}
+
+type ButtonProps = {
+  text: string
+  onClick: () => void
+  className?: string
+}
+
 export const SlideMainPage = ({ isOpen, onClose, children }: Props) => {
   const [isAlertOpen, setIsAlertOpen] = useState(false)
+  const [alertTitle, setAlertTitle] = useState('')
+  const [alertDescription, setAlertDescription] = useState('')
+  const [alertButtons, setAlertButtons] = useState<ButtonProps[]>([])
 
-  const handleOpenDialog = () => {
+  const handleOpenDialog = ({ title, description, buttons }: CustomAlertDialogProps) => {
     setIsAlertOpen(true)
+
+    setAlertTitle(title)
+    setAlertDescription(description)
+    setAlertButtons(buttons)
   }
 
-  const alertButtons = [
-    {
-      text: 'Cancel',
-      onClick: () => console.log('Cancel clicked'),
-    },
-    {
-      text: 'Confirm',
-      onClick: () => console.log('Confirm clicked'),
-      className: 'bg-blue-500 text-white hover:bg-blue-600',
-    },
-    {
-      text: 'Delete',
-      onClick: () => console.log('Delete clicked'),
-      className: 'bg-red-500 text-white hover:bg-red-600',
-    },
-  ]
+  // const alertButtons = [
+  //   {
+  //     text: 'Cancel',
+  //     onClick: () => console.log('Cancel clicked'),
+  //   },
+  //   {
+  //     text: 'Confirm',
+  //     onClick: () => console.log('Confirm clicked'),
+  //     className: 'bg-blue-500 text-white hover:bg-blue-600',
+  //   },
+  //   {
+  //     text: 'Delete',
+  //     onClick: () => console.log('Delete clicked'),
+  //     className: 'bg-red-500 text-white hover:bg-red-600',
+  //   },
+  // ]
 
   if (!isOpen) {
     return null
@@ -68,7 +88,13 @@ export const SlideMainPage = ({ isOpen, onClose, children }: Props) => {
           {/* 버튼 그룹 */}
           <div className="flex space-x-2">
             <button
-              onClick={handleOpenDialog}
+              onClick={() =>
+                handleOpenDialog({
+                  title: 'Custom Alert',
+                  description: 'This is a custom alert dialog with multiple buttons.',
+                  buttons: alertButtons,
+                })
+              }
               className="px-4 py-2 font-semibold text-white bg-blue-500 rounded hover:bg-blue-600">
               Open Dialog
             </button>
@@ -77,6 +103,15 @@ export const SlideMainPage = ({ isOpen, onClose, children }: Props) => {
             </button>
           </div>
         </div>
+        {isAlertOpen && (
+          <CustomAlertDialog
+            open={isAlertOpen}
+            title={alertTitle}
+            description={alertDescription}
+            buttons={alertButtons}
+            onOpenChange={setIsAlertOpen}
+          />
+        )}
       </SlidePanel>
     </>
   )

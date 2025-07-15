@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useCallback } from 'react'
 
 type ButtonProps = {
   text: string
@@ -8,13 +8,42 @@ type ButtonProps = {
 
 type Props = {
   open: boolean
-  onOpenChange: (open: boolean) => void
+  onOpenChange?: (open: boolean) => void // onOpenChange를 선택적(optional) prop으로 변경
   title: string
   description: string
   buttons: ButtonProps[]
 }
 
-export const CustomAlertDialog = ({ open, onOpenChange, title, description, buttons }: Props) => {
+export const CustomAlertDialog = ({ open: controlledOpen, onOpenChange, title, description, buttons }: Props) => {
+  // onOpenChange 유무에 따라 제어/비제어 모드 결정
+  const isControlled = onOpenChange !== undefined
+
+  // 비제어 모드를 위한 내부 상태
+  const [internalOpen, setInternalOpen] = useState(controlledOpen)
+
+  // 최종적으로 사용할 open 상태. 제어 모드일 경우 prop을, 비제어 모드일 경우 내부 state를 사용
+  const open = isControlled ? controlledOpen : internalOpen
+
+  // 제어 모드일 때, 부모의 open prop이 변경되면 내부 상태도 동기화
+  useEffect(() => {
+    setInternalOpen(controlledOpen)
+  }, [controlledOpen])
+
+  // 상태를 변경하는 통합 핸들러
+  // useCallback으로 함수를 메모이제이션합니다.
+  const handleOpenChange = useCallback(
+    (newOpen: boolean) => {
+      if (isControlled) {
+        // 제어 모드이면 부모의 함수 호출
+        onOpenChange(newOpen)
+      } else {
+        // 비제어 모드이면 내부 상태 변경
+        setInternalOpen(newOpen)
+      }
+    },
+    [isControlled, onOpenChange],
+  )
+
   const [position, setPosition] = useState({ x: window.innerWidth / 2, y: window.innerHeight / 2 })
   const [isDragging, setIsDragging] = useState(false)
   const dragStartPos = useRef({ x: 0, y: 0 })
@@ -23,7 +52,7 @@ export const CustomAlertDialog = ({ open, onOpenChange, title, description, butt
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
-        onOpenChange(false)
+        handleOpenChange(false) // 통합 핸들러 사용
       }
     }
 
@@ -31,7 +60,7 @@ export const CustomAlertDialog = ({ open, onOpenChange, title, description, butt
     return () => {
       document.removeEventListener('keydown', handleKeyDown)
     }
-  }, [onOpenChange])
+  }, [handleOpenChange])
 
   if (!open) {
     return null
@@ -87,7 +116,7 @@ export const CustomAlertDialog = ({ open, onOpenChange, title, description, butt
                 key={index}
                 onClick={() => {
                   button.onClick()
-                  onOpenChange(false)
+                  handleOpenChange(false) // 통합 핸들러를 사용하고, false로 수정하여 팝업을 닫음
                 }}
                 className={`px-4 py-2 rounded ${button.className || 'bg-gray-200 text-gray-800 hover:bg-gray-300'}`}>
                 {button.text}

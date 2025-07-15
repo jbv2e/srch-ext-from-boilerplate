@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 // import { ToggleButton, CircleButton } from '@extension/ui'
 import { CircleButton, PortalContainerContext } from '@extension/ui'
-import { SlideMainPage } from './components/SlideMainPage'
+import { SlideMainPage } from './pages/main/SlideMainPage'
 // import { exampleThemeStorage } from '@extension/storage'
 // import { t } from '@extension/i18n'
 
