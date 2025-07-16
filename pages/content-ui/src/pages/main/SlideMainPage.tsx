@@ -58,14 +58,14 @@ export const SlideMainPage = ({ isOpen, onClose, children }: Props) => {
 
   return (
     <>
-      <SlidePanel
-        isOpen={isOpen}
-        onClose={onClose}
-        isAlertOpen={isAlertOpen}
-        onAlertOpenChange={setIsAlertOpen}
-        alertTitle="Custom Alert"
-        alertDescription="This is a custom alert dialog with multiple buttons."
-        alertButtons={alertButtons}>
+      <SlidePanel isOpen={isOpen} onClose={onClose}>
+        {
+          // isAlertOpen={isAlertOpen}
+          // onAlertOpenChange={setIsAlertOpen}
+          // alertTitle="Custom Alert"
+          // alertDescription="This is a custom alert dialog with multiple buttons."
+          // alertButtons={alertButtons}>
+        }
         {children}
         {/* 헤더 */}
         <div className="flex items-center justify-between mb-6">
@@ -92,7 +92,7 @@ export const SlideMainPage = ({ isOpen, onClose, children }: Props) => {
                 handleOpenDialog({
                   title: 'Custom Alert',
                   description: 'This is a custom alert dialog with multiple buttons.',
-                  buttons: alertButtons,
+                  buttons: [{ text: 'test', onClick: () => console.log('test') }],
                 })
               }
               className="px-4 py-2 font-semibold text-white bg-blue-500 rounded hover:bg-blue-600">

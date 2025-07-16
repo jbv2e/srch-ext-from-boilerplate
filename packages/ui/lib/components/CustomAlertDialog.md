@@ -279,3 +279,70 @@ console.log(originalProps.user.role);
     *   결과적으로, 이전에 화면에 보였던 다이얼로그의 모든 HTML 요소들이 DOM에서 제거되고, 사용자의 눈에는 팝업이 닫히는 것으로 보이게 됩니다.
 
 이처럼 `setInternalOpen(false)`는 직접적으로 DOM을 조작하는 것이 아니라, 리액트의 상태를 변경하여 리렌더링을 유발하고, 그 결과로 UI가 업데이트되도록 하는 선언적인 방식으로 동작합니다.
+
+=======================================================
+
+
+네, 그 부분은 리액트에서 매우 흔하게 혼동하는 지점이자 아주 중요한 개념입니다. 질문하신 내용이 정확히 핵심을 짚고 있습니다.
+
+결론부터 말씀드리면, `const [internalOpen, setInternalOpen] = useState(open)`과 같이 사용하는 것은 **최초 렌더링 시에만 `open` prop의 값을 사용하고, 그 이후의 리렌더링에서는 부모로부터 받은 `open` prop의 변경을 무시하게 되어** 심각한 버그를 유발합니다.
+
+---
+
+### `useState(initialValue)`의 동작 원리
+
+`useState`의 인자로 전달되는 값은 **컴포넌트가 처음 생성(마운트)될 때 단 한 번만** 상태의 "초기값"으로 사용됩니다.
+
+-   **최초 렌더링 시**: `useState(open)`이 실행되고, `internalOpen` 상태는 부모가 전달한 `open` prop의 값으로 초기화됩니다.
+-   **이후 모든 리렌더링 시**: 리액트는 `useState(open)`의 `open` 인자를 **완전히 무시**합니다. 대신, 리액트가 내부적으로 기억하고 있는 `internalOpen`의 **현재 값**을 그대로 반환합니다.
+
+### `useState(open)` 방식의 문제점 시나리오 (제어 모드)
+
+`CustomAlertDialog`가 부모에 의해 제어되는 **제어 모드**라고 가정해봅시다.
+
+1.  **최초 렌더링**:
+    *   부모가 `<CustomAlertDialog open={false} ... />`를 렌더링합니다.
+    *   `useState(false)`가 실행되고, `internalOpen`은 `false`가 됩니다.
+    *   팝업이 닫혀있습니다. **(정상 동작)**
+
+2.  **부모의 상태 변경**:
+    *   부모 컴포넌트에서 어떤 이벤트가 발생하여 `open` 상태를 `true`로 변경합니다.
+    *   부모가 리렌더링되면서, 이제 `<CustomAlertDialog open={true} ... />`를 렌더링합니다.
+    *   `CustomAlertDialog`가 리렌더링됩니다.
+
+3.  **버그 발생**:
+    *   리렌더링 시, `useState(true)` 코드를 만나지만 리액트는 인자인 `true`를 **무시**합니다.
+    *   리액트는 이전에 저장된 `internalOpen`의 값인 `false`를 그대로 반환합니다.
+    *   결과적으로, `internalOpen`은 여전히 `false`이므로 **팝업이 열리지 않습니다.**
+
+이처럼 `useState`의 초기값으로 prop을 넘기는 방식은 "prop의 변경 사항을 컴포넌트 내부 상태와 동기화"하는 데 사용할 수 없습니다.
+
+---
+
+### `useEffect` 방식이 올바른 이유
+
+`useEffect`는 **렌더링이 완료된 후에** 특정 동작을 수행하기 위해 사용됩니다.
+
+```javascript
+useEffect(() => {
+  setInternalOpen(controlledOpen);
+}, [controlledOpen]);
+```
+
+이 코드는 다음과 같이 동작합니다.
+
+1.  컴포넌트가 렌더링될 때마다 `controlledOpen` prop의 값을 확인합니다.
+2.  이전 렌더링 때의 `controlledOpen` 값과 **현재 렌더링 때의 `controlledOpen` 값이 다르면**, `useEffect` 내부의 콜백 함수를 실행합니다.
+3.  콜백 함수인 `setInternalOpen(controlledOpen)`이 실행되어, 내부 상태(`internalOpen`)를 새로운 prop 값으로 업데이트합니다.
+
+이것이 바로 **"prop의 변경에 반응하여 내부 상태를 동기화"**하는 올바르고 표준적인 방법입니다. 이를 "prop-derived state(prop에서 파생된 상태)"를 다루는 패턴이라고 부릅니다.
+
+### 요약
+
+| 구분 | `const [state, setState] = useState(prop)` | `useEffect(() => { setState(prop) }, [prop])` |
+| :--- | :--- | :--- |
+| **실행 시점** | 최초 렌더링 시 단 한 번 | 렌더링 후, `prop`이 변경될 때마다 |
+| **역할** | 상태의 **초기값** 설정 | `prop`과 상태를 **동기화** |
+| **결과** | `prop`의 변경을 반영하지 못함 | `prop`의 변경을 상태에 올바르게 반영함 |
+
+따라서 제안해주신 방식은 버그를 유발하므로, `useEffect`를 사용하는 것이 반드시 필요합니다.
