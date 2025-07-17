@@ -1,32 +1,32 @@
 import type React from 'react'
-import { CustomAlertDialog } from './CustomAlertDialog'
+// import { CustomAlertDialog } from './CustomAlertDialog'
 
-type ButtonProps = {
-  text: string
-  onClick: () => void
-  className?: string
-}
+// type ButtonProps = {
+//   text: string
+//   onClick: () => void
+//   className?: string
+// }
 
 type Props = {
   children: React.ReactNode
   isOpen: boolean
   onClose: () => void
-  isAlertOpen: boolean
-  onAlertOpenChange: (open: boolean) => void
-  alertTitle: string
-  alertDescription: string
-  alertButtons: ButtonProps[]
+  // isAlertOpen: boolean
+  // onAlertOpenChange: (open: boolean) => void
+  // alertTitle: string
+  // alertDescription: string
+  // alertButtons: ButtonProps[]
 }
 
 export const SlidePanel = ({
   isOpen,
   onClose,
   children,
-  isAlertOpen,
-  onAlertOpenChange,
-  alertTitle,
-  alertDescription,
-  alertButtons,
+  // isAlertOpen,
+  // onAlertOpenChange,
+  // alertTitle,
+  // alertDescription,
+  // alertButtons,
 }: Props) => {
   // const [isDarkMode, setIsDarkMode] = React.useState(localStorage.getItem('theme') === 'dark')
 
@@ -78,15 +78,17 @@ export const SlidePanel = ({
           {children}
         </div>
       </div>
-      {isAlertOpen && (
-        <CustomAlertDialog
-          open={isAlertOpen}
-          title={alertTitle}
-          description={alertDescription}
-          buttons={alertButtons}
-          onOpenChange={onAlertOpenChange}
-        />
-      )}
+      {
+        // isAlertOpen && (
+        // <CustomAlertDialog
+        //   open={isAlertOpen}
+        //   title={alertTitle}
+        //   description={alertDescription}
+        //   buttons={alertButtons}
+        //   onOpenChange={onAlertOpenChange}
+        // />
+        // )
+      }
     </>
   )
 }
